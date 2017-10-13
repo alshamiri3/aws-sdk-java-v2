@@ -211,7 +211,10 @@ public final class SyncClientInterface implements ClassSpec {
     }
 
 
-    private MethodSpec.Builder operationSimpleMethodSignature(IntermediateModel model, OperationModel opModel, String methodName) {
+    private MethodSpec.Builder operationSimpleMethodSignature(IntermediateModel model,
+                                                              OperationModel opModel,
+                                                              String methodName) {
+
         TypeName returnType = ClassName.get(model.getMetadata().getFullModelPackageName(),
                                             opModel.getReturnType().getReturnType());
 

@@ -18,36 +18,46 @@ package software.amazon.awssdk.pagination;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.function.Function;
+import software.amazon.awssdk.annotations.SdkProtectedApi;
 
+/**
+ * Iterable for the paginated items. This class can be used through iterate through
+ * all the items across multiple pages until there is no more response from the service.
+ *
+ * @param <ResponseT> The type of a single response page
+ * @param <ItemT> The type of paginated member in a response page
+ */
+@SdkProtectedApi
 public class PaginatedItemsIterable<ResponseT, ItemT> implements SdkIterable<ItemT> {
 
-    private final Iterator<ResponseT> responseIterator;
+    private final Paginated paginator;
     private final Function<ResponseT, Iterator<ItemT>> getPaginatedItemIterator;
 
-    public PaginatedItemsIterable(Iterator<ResponseT> responseIterator,
-                                  Function<ResponseT, Iterator<ItemT>> getPaginatedItemIterator) {
-        this.responseIterator = responseIterator;
-        this.getPaginatedItemIterator = getPaginatedItemIterator;
+    public PaginatedItemsIterable(Paginated paginator,
+                                  Function<ResponseT, Iterator<ItemT>> getPaginatedMemberIterator) {
+        this.paginator = paginator;
+        this.getPaginatedItemIterator = getPaginatedMemberIterator;
     }
-
 
     @Override
     public Iterator<ItemT> iterator() {
-        return new ItemIterator(responseIterator);
+        return new ItemIterator(paginator.iterator());
     }
 
     private class ItemIterator implements Iterator<ItemT> {
 
+        private final Iterator<ResponseT> responsesIterator;
         private Iterator<ItemT> itemsIterator;
 
-        ItemIterator(Iterator<ResponseT> responseIterator) {
-            this.itemsIterator = getPaginatedItemIterator.apply(responseIterator.next());
+        ItemIterator(final Iterator<ResponseT> responsesIterator) {
+            this.responsesIterator = responsesIterator;
+            this.itemsIterator = getPaginatedItemIterator.apply(responsesIterator.next());
         }
 
         @Override
         public boolean hasNext() {
             return (itemsIterator != null && itemsIterator.hasNext()) ||
-                    responseIterator.hasNext();
+                    responsesIterator.hasNext();
         }
 
         @Override
@@ -56,8 +66,15 @@ public class PaginatedItemsIterable<ResponseT, ItemT> implements SdkIterable<Ite
                 throw new NoSuchElementException();
             }
 
-            if (itemsIterator == null || !itemsIterator.hasNext()) {
-                itemsIterator = getPaginatedItemIterator.apply(responseIterator.next());
+            // Using while loop here to handle response pages with empty collection of items
+            while (!itemsIterator.hasNext() && responsesIterator.hasNext()) {
+                itemsIterator = getPaginatedItemIterator.apply(responsesIterator.next());
+            }
+
+
+            if (!itemsIterator.hasNext()) {
+                // TODO throw error or return null
+                return null;
             }
 
             return itemsIterator.next();

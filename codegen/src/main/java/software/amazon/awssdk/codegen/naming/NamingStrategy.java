@@ -92,4 +92,5 @@ public interface NamingStrategy {
      * @return Appropriate name to use for fluent setter method (i.e. withFoo) for a model class member.
      */
     String getFluentSetterMethodName(String memberName);
+
 }

@@ -25,10 +25,10 @@ import java.util.Collections;
 import java.util.Map;
 import software.amazon.awssdk.codegen.internal.Utils;
 import software.amazon.awssdk.codegen.model.config.customization.CustomizationConfig;
+import software.amazon.awssdk.codegen.model.service.PaginatorDefinition;
 import software.amazon.awssdk.core.AmazonWebServiceResult;
 import software.amazon.awssdk.core.ResponseMetadata;
 import software.amazon.awssdk.core.util.ValidationUtils;
-import software.amazon.awssdk.codegen.model.service.PaginatorDefinition;
 import software.amazon.awssdk.utils.IoUtils;
 
 public final class IntermediateModel {
@@ -180,7 +180,7 @@ public final class IntermediateModel {
         return waiters.size() > 0;
     }
 
-    public boolean getHasPaginators() {
+    public boolean hasPaginators() {
         return paginators.size() > 0;
     }
 

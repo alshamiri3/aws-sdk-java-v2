@@ -40,12 +40,12 @@ import software.amazon.awssdk.codegen.poet.client.specs.Ec2ProtocolSpec;
 import software.amazon.awssdk.codegen.poet.client.specs.JsonProtocolSpec;
 import software.amazon.awssdk.codegen.poet.client.specs.ProtocolSpec;
 import software.amazon.awssdk.codegen.poet.client.specs.QueryXmlProtocolSpec;
+import software.amazon.awssdk.codegen.utils.PaginatorUtils;
 import software.amazon.awssdk.core.auth.presign.PresignerParams;
 import software.amazon.awssdk.core.client.ClientHandler;
 import software.amazon.awssdk.core.config.AdvancedClientOption;
 import software.amazon.awssdk.core.config.ClientConfiguration;
 import software.amazon.awssdk.core.config.SyncClientConfiguration;
-import software.amazon.awssdk.codegen.utils.PaginatorUtils;
 
 public class SyncClientClass implements ClassSpec {
 
@@ -158,11 +158,13 @@ public class SyncClientClass implements ClassSpec {
 
         // Add extra methods for paginated operations
         if (model.getPaginators().keySet().contains(opModel.getOperationName())) {
-            methods.add(SyncClientInterface.operationMethodSignature(model, opModel, PaginatorUtils.getSyncMethodName(opModel.getMethodName()))
+            methods.add(SyncClientInterface.operationMethodSignature(model, opModel,
+                                                                     PaginatorUtils.getSyncMethodName(opModel.getMethodName()))
                     .addAnnotation(Override.class)
                     .returns(poetExtensions.getResponseClassForPaginatedOperation(opModel.getOperationName()))
                     .addCode("\n")
-                    .addStatement("$T firstPage = $L($L)", returnType, opModel.getMethodName(), opModel.getInput().getVariableName())
+                    .addStatement("$T firstPage = $L($L)", returnType, opModel.getMethodName(),
+                                  opModel.getInput().getVariableName())
                     .addCode("\n")
                     .addStatement("return new $T(this, $L, firstPage)",
                             poetExtensions.getResponseClassForPaginatedOperation(opModel.getOperationName()),

@@ -181,4 +181,5 @@ public class DefaultNamingStrategy implements NamingStrategy {
     public String getFluentSetterMethodName(String memberName) {
         return Utils.unCapitialize(memberName);
     }
+
 }

@@ -18,6 +18,14 @@ package software.amazon.awssdk.pagination;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
+/**
+ * A custom iterable used in paginated responses.
+ *
+ * This interface has a default stream() method which creates a stream from
+ * spliterator method.
+ *
+ * @param <T> the type of elements returned by the iterator
+ */
 public interface SdkIterable<T> extends Iterable<T> {
 
     default Stream<T> stream() {

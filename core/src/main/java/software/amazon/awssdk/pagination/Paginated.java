@@ -18,8 +18,8 @@ package software.amazon.awssdk.pagination;
 /**
  * Return type interface for the paginated operations
  *
- * @param <PageT> A single response page
- * @param <ItemT> The paginated item in a single page
+ * @param <PageT> The type of a single page
+ * @param <ItemT> The type of paginated member in a response page
  */
 public interface Paginated<PageT, ItemT> extends SdkIterable<PageT> {
 

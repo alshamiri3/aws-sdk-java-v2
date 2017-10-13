@@ -1,5 +1,11 @@
 {
   "pagination": {
+    "DescribeStream": {
+      "input_token": "ExclusiveStartShardId",
+      "limit_key": "Limit",
+      "output_token": "StreamDescription.LastEvaluatedShardId",
+      "result_key": "StreamDescription.Shards"
+    },
     "ListStreams": {
       "input_token": "ExclusiveStartStreamArn",
       "limit_key": "Limit",

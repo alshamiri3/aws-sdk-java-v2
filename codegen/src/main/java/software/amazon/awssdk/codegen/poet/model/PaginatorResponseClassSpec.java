@@ -1,17 +1,18 @@
 /*
- * Copyright 2011-2017 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ * Copyright 2010-2017 Amazon.com, Inc. or its affiliates. All Rights Reserved.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at:
+ * Licensed under the Apache License, Version 2.0 (the "License").
+ * You may not use this file except in compliance with the License.
+ * A copy of the License is located at
  *
- *    http://aws.amazon.com/apache2.0
+ *  http://aws.amazon.com/apache2.0
  *
- * This file is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES
- * OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and
- * limitations under the License.
+ * or in the "license" file accompanying this file. This file is distributed
+ * on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the License for the specific language governing
+ * permissions and limitations under the License.
  */
+
 package software.amazon.awssdk.codegen.poet.model;
 
 import com.squareup.javapoet.ClassName;
@@ -21,33 +22,31 @@ import com.squareup.javapoet.MethodSpec;
 import com.squareup.javapoet.ParameterizedTypeName;
 import com.squareup.javapoet.TypeName;
 import com.squareup.javapoet.TypeSpec;
+import java.security.InvalidParameterException;
+import java.util.Iterator;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import javax.lang.model.element.Modifier;
 import software.amazon.awssdk.codegen.model.intermediate.IntermediateModel;
 import software.amazon.awssdk.codegen.model.intermediate.MemberModel;
 import software.amazon.awssdk.codegen.model.intermediate.OperationModel;
+import software.amazon.awssdk.codegen.model.intermediate.ShapeModel;
 import software.amazon.awssdk.codegen.model.service.PaginatorDefinition;
 import software.amazon.awssdk.codegen.poet.ClassSpec;
 import software.amazon.awssdk.codegen.poet.PoetExtensions;
 import software.amazon.awssdk.codegen.poet.PoetUtils;
 import software.amazon.awssdk.pagination.Paginated;
 import software.amazon.awssdk.pagination.PaginatedItemsIterable;
-import software.amazon.awssdk.pagination.PaginatedResponsesIterable;
+import software.amazon.awssdk.pagination.PaginatedResponsesIterator;
 import software.amazon.awssdk.pagination.SdkIterable;
-
-import javax.lang.model.element.Modifier;
-import java.security.InvalidParameterException;
-import java.util.Iterator;
-import java.util.function.Function;
-import java.util.function.Predicate;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * Java poet {@link ClassSpec} to generate the response class for sync paginated operations.
  *
- * Sample of a generated class:
+ * Sample of a generated class with annotations:
 
-    @Generated("software.amazon.awssdk:codegen")
-    public final class ListTablesPaginator implements Paginated<ListTablesResponse, String> {
+    public final class ListTablesPaginator implements Paginated&lt;ListTablesResponse, String> {
         private final DynamoDBClient client;
 
         private final ListTablesRequest firstRequest;
@@ -61,16 +60,14 @@ import java.util.stream.Stream;
             this.firstResponsePage = firstResponsePage;
         }
 
-        @Override
-            public ListTablesResponse firstPage() {
+        public ListTablesResponse firstPage() {
             return firstResponsePage;
         }
 
-        @Override
-        public Iterator<ListTablesResponse> iterator() {
-            Predicate<ListTablesResponse> hasNextResponse = response -> response != null;
+        public Iterator&lt;ListTablesResponse> iterator() {
+            Predicate&lt;ListTablesResponse> hasNextResponse = response -> response != null;
 
-            Function<ListTablesResponse, ListTablesResponse> getNextResponse = response -> {
+            Function&lt;ListTablesResponse, ListTablesResponse> getNextResponse = response -> {
                 if (response == null || response.lastEvaluatedTableName() == null) {
                     return null;
                 } else {
@@ -82,15 +79,14 @@ import java.util.stream.Stream;
             return new PaginatedResponsesIterable(firstResponsePage, getNextResponse).iterator();
         }
 
-        @Override
-        public SdkIterable<String> allItems() {
-            Function<ListTablesResponse, Iterator<String>> getPaginatedMemberIterator = response -> response != null ? response
-                        .tableNames().iterator() : null;
+        public SdkIterable&lt;String> allItems() {
+            Function&lt;ListTablesResponse, Iterator&lt;String>> getPaginatedMemberIterator
+                        = response -> response != null ? response.tableNames().iterator() : null;
 
             return new PaginatedItemsIterable(iterator(), getPaginatedMemberIterator);
         }
 
-        public SdkIterable<String> tableNames() {
+        public SdkIterable&lt;String> tableNames() {
             return allItems();
         }
     }
@@ -128,7 +124,7 @@ public class PaginatorResponseClassSpec implements ClassSpec {
                 .addAnnotation(PoetUtils.GENERATED)
                 .addSuperinterface(getPaginatedInterface())
                 .addFields(Stream.of(syncClientInterfaceField(), requestClassField(), responseClassField())
-                        .collect(Collectors.toList()))
+                                 .collect(Collectors.toList()))
                 .addMethod(constructor())
                 .addMethod(firstPageMethod())
                 .addMethod(iteratorMethod())
@@ -180,11 +176,11 @@ public class PaginatorResponseClassSpec implements ClassSpec {
     }
 
     private FieldSpec requestClassField() {
-        return FieldSpec.builder(requestType(),REQUEST_MEMBER, Modifier.PRIVATE, Modifier.FINAL).build();
+        return FieldSpec.builder(requestType(), REQUEST_MEMBER, Modifier.PRIVATE, Modifier.FINAL).build();
     }
 
     private FieldSpec responseClassField() {
-        return FieldSpec.builder(responseType(),RESPONSE_MEMBER, Modifier.PRIVATE, Modifier.FINAL).build();
+        return FieldSpec.builder(responseType(), RESPONSE_MEMBER, Modifier.PRIVATE, Modifier.FINAL).build();
     }
 
     private MethodSpec constructor() {
@@ -221,17 +217,15 @@ public class PaginatorResponseClassSpec implements ClassSpec {
                 .addAnnotation(Override.class)
                 .addModifiers(Modifier.PUBLIC)
                 .returns(ParameterizedTypeName.get(ClassName.get(Iterator.class), responseType()))
-                .addStatement("$T hasNextResponse = response -> response != null",
-                        ParameterizedTypeName.get(ClassName.get(Predicate.class), responseType()))
                 .addCode("\n")
                 .addCode(getNextResponseBlock())
                 .addCode("\n")
-                .addStatement("return new $T($L, $L).iterator()", PaginatedResponsesIterable.class,
+                .addStatement("return new $T($L, $L)", PaginatedResponsesIterator.class,
                         RESPONSE_MEMBER, "getNextResponse")
                 .build();
     }
 
-    /**
+    /*
      * Returns {@link CodeBlock} representing a {@link Function} that takes a response as input
      * and returns the next response as output.
      *
@@ -250,11 +244,11 @@ public class PaginatorResponseClassSpec implements ClassSpec {
      */
     private CodeBlock getNextResponseBlock() {
         CodeBlock ifElseBlock = CodeBlock.builder()
-                .beginControlFlow("if (response == null || response.$L() == null)", fluentGetterNameForOutputToken())
+                .beginControlFlow("if (response == null || response.$L == null)", fluentGetterMethodForOutputToken())
                 .addStatement("return null")
                 .nextControlFlow("else")
-                .addStatement("return client.$L(firstRequest.toBuilder().$L(response.$L()).build())",
-                        operationModel.getMethodName(), fluentSetterNameForInputToken(), fluentGetterNameForOutputToken())
+                .addStatement("return client.$L(firstRequest.toBuilder().$L(response.$L).build())",
+                        operationModel.getMethodName(), fluentSetterNameForInputToken(), fluentGetterMethodForOutputToken())
                 .endControlFlow()
                 .build();
 
@@ -264,16 +258,6 @@ public class PaginatorResponseClassSpec implements ClassSpec {
                 .add(ifElseBlock)
                 .addStatement("}")
                 .build();
-    }
-
-    /**
-     * @return the fluent getter method name for {@link PaginatorDefinition#getOutputToken()}
-     * member in the response.
-     */
-    private String fluentGetterNameForOutputToken() {
-        return operationModel.getOutputShape()
-                .findMemberModelByC2jName(paginatorDefinition.getOutputToken())
-                .getFluentGetterMethodName();
     }
 
     /**
@@ -287,29 +271,94 @@ public class PaginatorResponseClassSpec implements ClassSpec {
     }
 
     /**
-     * @return the fluent getter name for {@link PaginatorDefinition#getResultKey()}
-     * member in the response
+     * @return the fluent getter method for {@link PaginatorDefinition#getOutputToken()}
+     * member in the response. The returned String includes the '()' after each method name.
+     *
+     * The {@link PaginatorDefinition#getOutputToken()} can be a nested String.
+     * An example would be StreamDescription.LastEvaluatedShardId which represents LastEvaluatedShardId member
+     * in StreamDescription class. The return String for it would be "streamDescription().lastEvaluatedShardId()"
      */
-    private String fluentGetterNameForResultKey() {
-        return memberModelForResultKey().getFluentGetterMethodName();
-    }
+    private String fluentGetterMethodForOutputToken() {
+        final String[] hierarchy = paginatorDefinition.getOutputToken().split("\\.");
 
-    private MemberModel memberModelForResultKey() {
-        return operationModel.getOutputShape().getMemberByC2jName(paginatorDefinition.getResultKey());
+        if (hierarchy.length < 1) {
+            throw new IllegalArgumentException("Error when splitting output token for " + c2jOperationName + " paginator.");
+        }
+
+        ShapeModel parentShape = operationModel.getOutputShape();
+        final StringBuilder getterMethod = new StringBuilder();
+
+        for (int i = 0; i < hierarchy.length; i++) {
+            getterMethod.append(".")
+                    .append(parentShape.findMemberModelByC2jName(hierarchy[i]).getFluentGetterMethodName())
+                    .append("()");
+
+            parentShape =  parentShape.findMemberModelByC2jName(hierarchy[i]).getShape();
+        }
+
+        return getterMethod.substring(1);
     }
 
     /**
-     * @return A {@link MethodSpec} for the overridden #ALL_ITEMS_METHOD method that returns
+     * @return the fluent getter method for {@link PaginatorDefinition#getResultKey()} ()}
+     * member in the response. The returned String includes the '()' after each method name.
+     *
+     * The {@link PaginatorDefinition#getResultKey()} can be a nested String.
+     * An example would be StreamDescription.Shards which represents Shards member in StreamDescription class.
+     * The return String for it would be "streamDescription().shards()"
+     */
+    private String fluentGetterMethodForResultKey() {
+        final String[] hierarchy = paginatorDefinition.getResultKey().split("\\.");
+
+        if (hierarchy.length < 1) {
+            throw new IllegalArgumentException("Error when splitting result key for " + c2jOperationName + " paginator.");
+        }
+
+        ShapeModel parentShape = operationModel.getOutputShape();
+        final StringBuilder getterMethod = new StringBuilder();
+
+        for (int i = 0; i < hierarchy.length; i++) {
+            getterMethod.append(".")
+                    .append(parentShape.findMemberModelByC2jName(hierarchy[i]).getFluentGetterMethodName())
+                    .append("()");
+
+            parentShape =  parentShape.findMemberModelByC2jName(hierarchy[i]).getShape();
+        }
+
+        return getterMethod.substring(1);
+    }
+
+    /**
+     * @return The {@link MemberModel} of the {@link PaginatorDefinition#getResultKey()}. If result key is nested,
+     * then returns the member model of the last child shape.
+     */
+    private MemberModel memberModelForResultKey() {
+        final String[] hierarchy = paginatorDefinition.getResultKey().split("\\.");
+
+        if (hierarchy.length < 1) {
+            throw new IllegalArgumentException("Error when splitting result key for " + c2jOperationName + " paginator.");
+        }
+
+        ShapeModel shape = operationModel.getOutputShape();
+
+        for (int i = 0; i < hierarchy.length - 1; i++) {
+            shape = shape.findMemberModelByC2jName(hierarchy[i]).getShape();
+        }
+
+        return shape.getMemberByC2jName(hierarchy[hierarchy.length - 1]);
+    }
+
+    /*
+     * Returns a {@link MethodSpec} for the overridden #ALL_ITEMS_METHOD method that returns
      * an iterable for iterating through the paginated items across responses.
      *
-     * A sample from dynamodb listTables paginator:
+     *  A sample from dynamodb listTables paginator:
      *
-     *  @Override
      *  public SdkIterable<String> allItems() {
      *     Function<ListTablesResponse, Iterator<String>> getPaginatedItemIterator =
      *              response -> response != null ? response.tableNames().iterator() : null;
      *
-     *     return new PaginatedItemsIterable(iterator(), getPaginatedItemIterator);
+     *     return new PaginatedItemsIterable(this, getPaginatedItemIterator);
      *  }
      *
      */
@@ -323,7 +372,7 @@ public class PaginatorResponseClassSpec implements ClassSpec {
                                 ParameterizedTypeName.get(ClassName.get(Iterator.class), getPaginatedMemberType())))
                 .addCode(getPaginatedMemberIteratorLambdaBlock())
                 .addCode("\n")
-                .addStatement("return new $T(iterator(), getPaginatedMemberIterator)", PaginatedItemsIterable.class)
+                .addStatement("return new $T(this, getPaginatedMemberIterator)", PaginatedItemsIterable.class)
                 .build();
     }
 
@@ -333,19 +382,19 @@ public class PaginatorResponseClassSpec implements ClassSpec {
         CodeBlock iteratorBlock = null;
 
         if (resultKeyModel.isList()) {
-            iteratorBlock = CodeBlock.builder().add("response.$L().iterator()", fluentGetterNameForResultKey())
+            iteratorBlock = CodeBlock.builder().add("response.$L.iterator()", fluentGetterMethodForResultKey())
                     .build();
 
         } else if (resultKeyModel.isMap()) {
-            iteratorBlock = CodeBlock.builder().add("response.$L().entrySet().iterator()", fluentGetterNameForResultKey())
+            iteratorBlock = CodeBlock.builder().add("response.$L.entrySet().iterator()", fluentGetterMethodForResultKey())
                     .build();
         }
 
         return CodeBlock.builder().addStatement("response -> response != null ? $L : null", iteratorBlock).build();
     }
 
-    /**
-     * @return A {@link MethodSpec} for the convenience method whose name is based on
+    /*
+     * Returns a {@link MethodSpec} for the convenience method whose name is based on
      * the paginated member. This gives clarity for the user when working with paginated members
      * of primitive types.
      *
@@ -354,15 +403,15 @@ public class PaginatorResponseClassSpec implements ClassSpec {
      * So this convenient method is named tableNames() to improve clarity.
      */
     private MethodSpec methodSimilarToPaginatedMemberName() {
-        return MethodSpec.methodBuilder(fluentGetterNameForResultKey())
+        return MethodSpec.methodBuilder(memberModelForResultKey().getFluentGetterMethodName())
                 .addModifiers(Modifier.PUBLIC)
                 .returns(ParameterizedTypeName.get(ClassName.get(SdkIterable.class), getPaginatedMemberType()))
                 .addStatement("return $L()", ALL_ITEMS_METHOD)
                 .build();
     }
 
-    /**
-     * @return  A {@link TypeName} of the paginated member in the response.
+    /*
+     * Returns a {@link TypeName} of the paginated member in the response.
      *
      * Examples:
      * If paginated item is represented as List<String>, then member type is String.
@@ -382,9 +431,7 @@ public class PaginatorResponseClassSpec implements ClassSpec {
             return typeProvider.fieldType(resultKeyModel.getListModel().getListMemberModel());
 
         } else if (resultKeyModel.isMap()) {
-            // TODO investigate why using mapEntryType() fails when paginated member is Map
-            return typeProvider.mapEntryType(resultKeyModel.getMapModel());
-
+            return typeProvider.mapEntryTypeWithConcreteTypes(resultKeyModel.getMapModel());
         } else {
             throw new IllegalArgumentException("Result key for " + c2jOperationName +
                     " operation in paginators file should be either a list or a map.");

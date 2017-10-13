@@ -17,7 +17,6 @@ package software.amazon.awssdk.codegen.poet;
 
 import com.squareup.javapoet.ClassName;
 import software.amazon.awssdk.codegen.model.intermediate.IntermediateModel;
-import software.amazon.awssdk.utils.StringUtils;
 
 /**
  * Extension and convenience methods to Poet that use the intermediate model.
