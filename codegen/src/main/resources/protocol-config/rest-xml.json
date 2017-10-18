@@ -1,28 +1,4 @@
 {
-  "asyncClient": {
-    "mainTemplate" : "/templates/common/AsyncClientClass.ftl",
-    "childTemplates" : [
-      {
-        "location" : "/macros/asyncclientclass/ClientMethodForOperation.ftl",
-        "importAsNamespace" : "AsyncClientMethodForOperation"
-      }, {
-        "location": "/macros/asyncclientclass/ClientMethodForOperationWithSimpleForm.ftl",
-        "importAsNamespace": "AsyncClientMethodForOperationWithSimpleForm"
-      }
-    ]
-  },
-  "requestClass": {
-    "mainTemplate" : "/templates/common/model-request-class.ftl"
-  },
-  "responseClass": {
-    "mainTemplate" : "/templates/common/model-class.ftl"
-  },
-  "modelClass": {
-    "mainTemplate" : "/templates/common/model-class.ftl"
-  },
-  "modelEnum": {
-    "mainTemplate" : "/templates/common/enum-class.ftl"
-  },
   "modelMarshaller": {
      "mainTemplate" : "/templates/rest-xml/request-marshaller.ftl",
      "childTemplates" : [
@@ -64,9 +40,6 @@
   },
   "baseExceptionClass": {
     "mainTemplate" : "/templates/common/base-exception-class.ftl"
-  },
-  "exceptionClass": {
-    "mainTemplate" : "/templates/common/model-exception-class.ftl"
   },
   "exceptionUnmarshaller": {
       "mainTemplate" : "/templates/query/exception-unmarshaller.ftl"

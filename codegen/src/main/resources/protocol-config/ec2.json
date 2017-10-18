@@ -1,28 +1,4 @@
 {
-  "asyncClient": {
-    "mainTemplate" : "/templates/common/AsyncClientClass.ftl",
-    "childTemplates" : [
-      {
-        "location" : "/macros/asyncclientclass/ClientMethodForOperation.ftl",
-        "importAsNamespace" : "AsyncClientMethodForOperation"
-      }, {
-        "location": "/macros/asyncclientclass/ClientMethodForOperationWithSimpleForm.ftl",
-        "importAsNamespace": "AsyncClientMethodForOperationWithSimpleForm"
-      }
-    ]
-  },
-  "requestClass": {
-    "mainTemplate" : "/templates/ec2/EC2RequestClass.ftl"
-  },
-  "responseClass": {
-    "mainTemplate" : "/templates/ec2/EC2ResponseClass.ftl"
-  },
-  "modelClass": {
-    "mainTemplate" : "/templates/common/model-class.ftl"
-  },
-  "modelEnum": {
-    "mainTemplate" : "/templates/common/enum-class.ftl"
-  },
   "modelMarshaller": {
      "mainTemplate" : "/templates/query/request-marshaller.ftl",
      "childTemplates" : [
@@ -49,9 +25,6 @@
   },
   "baseExceptionClass": {
     "mainTemplate" : "/templates/common/base-exception-class.ftl"
-  },
-  "exceptionClass": {
-    "mainTemplate" : "/templates/common/model-exception-class.ftl"
   },
   "exceptionUnmarshaller": {},
   "packageInfo" : {
